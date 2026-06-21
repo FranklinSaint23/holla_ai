@@ -1,0 +1,22 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    # Toutes les 14 minutes (Render s'endort après 15 min d'inactivité)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Permet de déclencher manuellement
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Holla AI on Render
+        run: |
+          echo "Pinging Holla AI service..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_URL }}/health" --max-time 30)
+          echo "HTTP Status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Warning: service returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "Service is alive!"
